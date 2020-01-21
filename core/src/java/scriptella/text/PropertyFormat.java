@@ -17,6 +17,11 @@ package scriptella.text;
 
 import scriptella.util.StringUtils;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.Reader;
+import java.sql.Clob;
+import java.sql.SQLException;
 import java.text.Format;
 import java.text.MessageFormat;
 import java.text.ParseException;
@@ -174,6 +179,30 @@ public class PropertyFormat {
             }
             result = format.format(param);
         } else {
+
+            if (object instanceof Clob)
+            {
+                StringBuilder sb = new StringBuilder();
+                try 
+                {
+                    java.sql.Clob clob = (java.sql.Clob)object;
+
+                    Reader reader = clob.getCharacterStream();
+                    BufferedReader br = new BufferedReader(reader);
+
+                    int ch;
+                    while((ch = br.read()) != -1)
+                    {
+                        sb.append((char)ch);
+                    }
+                    br.close();
+                }
+                catch (SQLException e) { e.printStackTrace(); result = null; }
+                catch (IOException e)  { e.printStackTrace(); result = null; }
+
+                result = sb.toString();
+            }
+            else
             result = object.toString();
         }
         if (result == null) {

@@ -86,6 +86,7 @@ public class ResultSetAdapter implements ParametersCallback, Closeable {
 
 
     public Object getParameter(final String name) {
+    	int lastType = 0;
         if (columnsMap==null) { //if first time access
             initMetaData();
         }
@@ -93,13 +94,14 @@ public class ResultSetAdapter implements ParametersCallback, Closeable {
             Integer index = columnsMap.find(name);
             int ind = index==null?-1:index - 1;
             if (ind >= 0 && ind < columnsCount) { //if index found and in range
+            	lastType=jdbcTypes[ind];
                 return converter.getObject(resultSet, ind + 1, jdbcTypes[ind]);
             } else { //otherwise call uppper level params
                 return params.getParameter(name);
             }
 
         } catch (SQLException e) {
-            throw new JdbcException("Unable to get parameter " + name, e);
+            throw new JdbcException("Unable to get parameter " + name + " type("+ lastType +")", e);
         }
     }
 

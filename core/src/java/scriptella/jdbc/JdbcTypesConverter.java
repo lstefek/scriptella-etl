@@ -64,6 +64,7 @@ class JdbcTypesConverter implements Closeable {
      * @see ResultSet#getObject(int)
      */
     public Object getObject(final ResultSet rs, final int index, final int jdbcType) throws SQLException {
+        Object result = null;
         switch (jdbcType) {
             case Types.DATE: //For date/timestamp use getTimestamp to keep hh,mm,ss if possible
             case Types.TIMESTAMP:
@@ -73,19 +74,74 @@ class JdbcTypesConverter implements Closeable {
             case Types.BLOB:
                 return rs.getBlob(index);
             case Types.CLOB:
-                return rs.getClob(index);
+                try { result = (Object)rs.getClob(index); }
+                catch (SQLException e)
+                {   // e.printStackTrace();
+                        // nektere jdbc drivery ignoruji clob a berou tyto sloupce jako string (SQLite)
+                        result = (Object)rs.getString(index);
+                }
+                return result;
             case Types.LONGVARBINARY:
                 InputStream is = rs.getBinaryStream(index);
                 return is == null ? null : toBlob(is);
             case Types.LONGVARCHAR:
                 Reader reader = rs.getCharacterStream(index);
                 return reader == null ? null : toClob(reader);
+
+            case Types.CHAR:
+            case Types.VARCHAR:
+            case Types.NUMERIC:
+            case Types.DECIMAL:
+            case Types.BIT:
+            case Types.TINYINT:
+            case Types.SMALLINT:
+            case Types.INTEGER:
+            case Types.BIGINT:
+            case Types.REAL:
+            case Types.FLOAT:
+            case Types.DOUBLE:
+            case Types.BINARY:
+            case Types.VARBINARY:
+                result = rs.getObject(index);
+                if (result == null) {
+                    return null;
+                }
+                return result;
         }
-        Object res = rs.getObject(index);
-        if (res == null) {
+
+        if (rs.getClass().getName() == "sun.jdbc.odbc.JdbcOdbcResultSet") {
+                        
+                switch (jdbcType) {
+            case Types.NVARCHAR:
+            case Types.NCHAR:
+                result = null;
+
+                try {
+                    result = (Object)rs.getString(index);
+                } catch (SQLException e) {
+                        try {
+                        result = (Object)rs.getBytes(index);
+                    } catch (SQLException e1) {
+                        result = null;
+                    }
+                }
+                if (result == null) {
+                    return null;
+                }
+                return result;
+                
+            case Types.NCLOB:
+                return rs.getClob(index);
+            default:
+                return rs.getString(index);
+                }
+        }
+                
+        result = rs.getObject(index);
+        if (result == null) {
             return null;
         }
-        return res;
+        return result;
     }
 
 
@@ -99,8 +155,12 @@ class JdbcTypesConverter implements Closeable {
      * @throws SQLException
      */
     public void setObject(final PreparedStatement preparedStatement, final int index, final Object value) throws SQLException {
+        //
+        if (preparedStatement.getClass().getName() == "org.sqlite.PrepStmt" && value instanceof Clob) {
+            preparedStatement.setObject(index, ((Clob)value).getSubString(1, (int)((Clob)value).length()));
+        }
         //Choosing a setter strategy
-        if (value instanceof InputStream) {
+        else if (value instanceof InputStream) {
             setBlob(preparedStatement, index, toBlob((InputStream) value));
         } else if (value instanceof Reader) {
             setClob(preparedStatement, index, toClob((Reader) value));

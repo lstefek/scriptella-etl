@@ -19,12 +19,18 @@ import scriptella.spi.ParametersCallback;
 import scriptella.spi.support.MapParametersCallback;
 import scriptella.util.IOUtils;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
+import java.sql.Blob;
+import java.sql.Clob;
+import java.sql.SQLException;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import javax.xml.bind.DatatypeConverter;
 
 
 /**
@@ -131,12 +137,53 @@ public class PropertiesSubstitutor {
             if (m != null) {
                 final String name = m.group(1);
                 String v;
+                String cls;
+                Object par;
 
-                if (m == m1) {
-                    v = toString(parameters.getParameter(name));
-                } else {
-                    v = toString(Expression.compile(name).evaluate(parameters));
+                if (m == m1)
+                    par = parameters.getParameter(name);
+                else
+                    par = Expression.compile(name).evaluate(parameters);
+
+                if (par != null) cls = par.getClass().getName();
+                if (par != null && par instanceof Clob)
+                {
+                    StringBuilder sb = new StringBuilder();
+                    try 
+                    {
+                        java.sql.Clob clob = (java.sql.Clob)par;
+
+                        Reader reader = clob.getCharacterStream();
+                        BufferedReader br = new BufferedReader(reader);
+
+                        int ch;
+                        while((ch = br.read()) != -1)
+                        {
+                            sb.append((char)ch);
+                        }
+                        br.close();
+                    }
+                    catch (SQLException e) { e.printStackTrace(); v = null; }
+                    catch (IOException e)  { e.printStackTrace(); v = null; }
+                    
+                    v = sb.toString();
+                    
                 }
+                else if (par != null && par instanceof Blob)
+                {
+                    try 
+                    {  //todo - test? lstefek
+                        java.sql.Blob blob = (java.sql.Blob)par;
+                        byte[] bdata = blob.getBytes(1, (int) blob.length());
+                        v = DatatypeConverter.printBase64Binary(bdata);
+                    }
+                    catch (SQLException e)
+                    {   e.printStackTrace();
+                        v = null;
+                    }
+                }
+
+                else v = toString(par);
 
                 if (v != null) {
                     if (res == null) {
