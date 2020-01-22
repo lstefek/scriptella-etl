@@ -40,6 +40,12 @@
 
     <developers>
         <developer>
+            <id>lstefek</id>
+            <name>Libor Stefek</name>
+            <email>libor.stefek@seznam.cz</email>
+            <timezone>+1</timezone>
+        </developer>
+        <developer>
             <id>ejboy</id>
             <name>Fyodor Kupolov</name>
             <timezone>+1</timezone>
@@ -59,20 +65,25 @@
     </modules>
 
     <scm>
-        <connection>scm:git:git://github.com/scriptella/scriptella-etl.git</connection>
-        <developerConnection>scm:git:git@github.com:scriptella/scriptella-etl.git</developerConnection>
-        <url>https://github.com/scriptella/scriptella-etl/tree/master</url>
+        <connection>scm:git:git://github.com/lstefek/scriptella-etl.git</connection>
+        <developerConnection>scm:git:git@github.com:lstefek/scriptella-etl.git</developerConnection>
+        <url>https://github.com/lstefek/scriptella-etl/tree/master</url>
       <tag>HEAD</tag>
   </scm>
     <issueManagement>
-        <url>https://github.com/scriptella/scriptella-etl/issues</url>
+        <url>https://github.com/lstefek/scriptella-etl/issues</url>
         <system>GitHub Issues</system>
     </issueManagement>
 
-	<distributionManagement>
+  <distributionManagement>
+    <repository>
+      <id>logis-maven-repo</id>
+      <url>scp://hood.logis.cz/home/maven/repo</url>
+    </repository>
+  </distributionManagement>
+
 		<!--
-		    See https://issues.sonatype.org/browse/OSSRH-51637 (previous OSSRH-413)
-		 -->
+	<distributionManagement>
 		<repository>
 			<id>scriptella-releases</id>
 			<name>Scriptella Central Repository</name>
@@ -84,6 +95,7 @@
 			<url>http://oss.sonatype.org/content/repositories/snapshots</url>
 		</snapshotRepository>
 	</distributionManagement>
+		 -->
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -193,6 +205,15 @@
                 </includes>
             </testResource>
         </testResources>
+
+        <extensions>
+          <!-- Enabling the use of SSH -->
+          <extension>
+            <groupId>org.apache.maven.wagon</groupId>
+             <artifactId>wagon-ssh</artifactId>
+             <version>3.3.4</version>
+          </extension>
+        </extensions>
 
         <plugins>
             <plugin>
