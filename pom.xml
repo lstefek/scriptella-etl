@@ -19,7 +19,7 @@
 
     <groupId>org.scriptella</groupId>
     <artifactId>scriptella-parent</artifactId>
-    <version>1.1-SNAPSHOT</version>
+    <version>1.2-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Scriptella</name>
@@ -68,7 +68,7 @@
         <connection>scm:git:git://github.com/lstefek/scriptella-etl.git</connection>
         <developerConnection>scm:git:git@github.com:lstefek/scriptella-etl.git</developerConnection>
         <url>https://github.com/lstefek/scriptella-etl/tree/master</url>
-      <tag>logis-1.2.0</tag>
+      <tag>HEAD</tag>
   </scm>
     <issueManagement>
         <url>https://github.com/lstefek/scriptella-etl/issues</url>
