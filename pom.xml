@@ -68,7 +68,7 @@
         <connection>scm:git:git://github.com/lstefek/scriptella-etl.git</connection>
         <developerConnection>scm:git:git@github.com:lstefek/scriptella-etl.git</developerConnection>
         <url>https://github.com/lstefek/scriptella-etl/tree/master</url>
-      <tag>HEAD</tag>
+      <tag>logis-1.2.0</tag>
   </scm>
     <issueManagement>
         <url>https://github.com/lstefek/scriptella-etl/issues</url>
