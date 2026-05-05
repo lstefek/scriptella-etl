@@ -51,10 +51,16 @@ public class VelocityConnection extends AbstractTextConnection {
         engine.setProperty("velocimacro.library", "");//unnecessary file in our case
         // bc = backwards-compatible whitespace: block directives eat their trailing newline (Velocity 1.x behaviour)
         engine.setProperty("parser.space_gobbling", "bc");
+        // Velocity uses TCCL to load ResourceManagerImpl; ensure it matches VelocityEngine's classloader
+        // to avoid "ResourceManagerImpl does not implement ResourceManager" under Ant fat-JAR classloading.
+        ClassLoader origTCCL = Thread.currentThread().getContextClassLoader();
         try {
+            Thread.currentThread().setContextClassLoader(VelocityEngine.class.getClassLoader());
             engine.init();
         } catch (Exception e) {
             throw new VelocityProviderException("Unable to initialize engine", e);
+        } finally {
+            Thread.currentThread().setContextClassLoader(origTCCL);
         }
         adapter = new VelocityContextAdapter();
     }
