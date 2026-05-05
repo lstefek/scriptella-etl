@@ -26,11 +26,10 @@ import java.io.Writer;
 import java.sql.Blob;
 import java.sql.Clob;
 import java.sql.SQLException;
+import java.util.Base64;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import javax.xml.bind.DatatypeConverter;
 
 
 /**
@@ -175,7 +174,7 @@ public class PropertiesSubstitutor {
                     {  //todo - test? lstefek
                         java.sql.Blob blob = (java.sql.Blob)par;
                         byte[] bdata = blob.getBytes(1, (int) blob.length());
-                        v = DatatypeConverter.printBase64Binary(bdata);
+                        v = Base64.getEncoder().encodeToString(bdata);
                     }
                     catch (SQLException e)
                     {   e.printStackTrace();

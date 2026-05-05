@@ -17,8 +17,6 @@ package scriptella.driver.velocity;
 
 import org.apache.velocity.app.VelocityEngine;
 import org.apache.velocity.context.Context;
-import org.apache.velocity.runtime.RuntimeServices;
-import org.apache.velocity.runtime.log.LogSystem;
 import scriptella.driver.text.AbstractTextConnection;
 import scriptella.spi.ConnectionParameters;
 import scriptella.spi.ParametersCallback;
@@ -33,7 +31,6 @@ import java.io.Writer;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Level;
 
 /**
  * Represents a session to velocity engine.
@@ -51,8 +48,9 @@ public class VelocityConnection extends AbstractTextConnection {
     public VelocityConnection(ConnectionParameters parameters) {
         super(Driver.DIALECT, parameters);
         engine = new VelocityEngine();
-        engine.setProperty(VelocityEngine.RUNTIME_LOG_LOGSYSTEM, LOG_SYSTEM);
         engine.setProperty("velocimacro.library", "");//unnecessary file in our case
+        // bc = backwards-compatible whitespace: block directives eat their trailing newline (Velocity 1.x behaviour)
+        engine.setProperty("parser.space_gobbling", "bc");
         try {
             engine.init();
         } catch (Exception e) {
@@ -126,42 +124,13 @@ public class VelocityConnection extends AbstractTextConnection {
         }
     }
 
-    //Adapting classes
-    static final LogSystem LOG_SYSTEM = new LogSystem() {
-        public void init(RuntimeServices rs) {
-        }
-
-        public void logVelocityMessage(int level, String message) {
-            if (level < 0) {
-                return;
-            }
-            Level lev; //converting velocity level to JUL
-            switch (level) {
-                case DEBUG_ID:
-                    lev = Level.FINE;
-                    break;
-                case INFO_ID: //Velocity INFO is too verbose
-                    lev = Level.CONFIG;
-                    break;
-                case ERROR_ID:
-                    lev = Level.WARNING;
-                    break;
-                default:
-                    lev = Level.INFO;
-            }
-            if (Driver.LOG.isLoggable(lev)) {
-                Driver.LOG.log(lev, "Engine: " + message);
-            }
-        }
-    };
-
     /**
      * Velocity Context adapter class for {@link ParametersCallback}.
      */
     private static class VelocityContextAdapter implements Context {
-        private static final Object[] EMPTY_ARRAY = new Object[0];
+        private static final String[] EMPTY_ARRAY = new String[0];
         private ParametersCallback callback;
-        private Map<Object, Object> localParameters;
+        private Map<String, Object> localParameters;
 
 
         public void setCallback(ParametersCallback callback) {
@@ -170,7 +139,7 @@ public class VelocityConnection extends AbstractTextConnection {
 
         public Object put(String key, Object value) {
             if (localParameters == null) {
-                localParameters = new HashMap<Object, Object>();
+                localParameters = new HashMap<>();
             }
 
             return localParameters.put(key, value);
@@ -183,15 +152,15 @@ public class VelocityConnection extends AbstractTextConnection {
             return callback.getParameter(key);
         }
 
-        public boolean containsKey(Object key) {
+        public boolean containsKey(String key) {
             return localParameters != null && localParameters.containsKey(key);
         }
 
-        public Object[] getKeys() {
-            return localParameters == null ? EMPTY_ARRAY : localParameters.keySet().toArray();
+        public String[] getKeys() {
+            return localParameters == null ? EMPTY_ARRAY : localParameters.keySet().toArray(new String[0]);
         }
 
-        public Object remove(Object key) {
+        public Object remove(String key) {
             return localParameters == null ? null : localParameters.remove(key);
         }
     }

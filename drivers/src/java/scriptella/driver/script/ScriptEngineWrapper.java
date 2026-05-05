@@ -41,7 +41,10 @@ class ScriptEngineWrapper implements Closeable {
         if (scriptEngine instanceof Compilable) {
             compilable = (Compilable) scriptEngine;
         }
-        nashornScriptEngine = "jdk.nashorn.api.scripting.NashornScriptEngine".equals(scriptEngine.getClass().getName());
+        // Also match standalone nashorn-core (org.openjdk.nashorn.*) which uses the same nashorn.global binding trick
+        String cn = scriptEngine.getClass().getName();
+        nashornScriptEngine = "jdk.nashorn.api.scripting.NashornScriptEngine".equals(cn)
+                || "org.openjdk.nashorn.api.scripting.NashornScriptEngine".equals(cn);
     }
 
     public boolean isNashornScriptEngine() {
