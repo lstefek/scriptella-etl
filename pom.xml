@@ -19,7 +19,7 @@
 
     <groupId>org.scriptella</groupId>
     <artifactId>scriptella-parent</artifactId>
-    <version>1.2.2-SNAPSHOT</version>
+    <version>1.2.2</version>
     <packaging>pom</packaging>
 
     <name>Scriptella</name>
@@ -78,7 +78,7 @@
   <distributionManagement>
     <repository>
       <id>logis-maven-repo</id>
-      <url>scp://hood.logis.cz/home/maven/repo</url>
+      <url>scpexe://hood.logis.cz/home/maven/repo</url>
     </repository>
   </distributionManagement>
 
@@ -222,8 +222,8 @@
           <!-- Enabling the use of SSH -->
           <extension>
             <groupId>org.apache.maven.wagon</groupId>
-             <artifactId>wagon-ssh</artifactId>
-             <version>3.3.4</version>
+            <artifactId>wagon-ssh-external</artifactId>
+            <version>3.5.3</version>
           </extension>
         </extensions>
 
